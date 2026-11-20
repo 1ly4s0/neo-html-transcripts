@@ -1,0 +1,15 @@
+{
+  "name": "neo-html-transcripts",
+  "version": "1.0.0",
+  "description": "Archiva un canal de Discord en HTML, con sus adjuntos dentro del archivo.",
+  "author": "1ly4s0",
+  "license": "MIT",
+  "repository": "github:1ly4s0/neo-html-transcripts",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts", "lib/"],
+  "keywords": ["discord", "discord.js", "transcripts", "tickets", "html"],
+  "engines": { "node": ">=18" },
+  "peerDependencies": { "discord.js": "^13 || ^14 || >=15.0.0-0 <16" },
+  "scripts": { "test": "node --test test/*.test.js" }
+}
