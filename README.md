@@ -80,6 +80,8 @@ Place `neo-transcripts.json` in the directory where you start Node. The package 
 | `images` | Copies of supported image attachments; links for other files. Equivalent to `saveImages: true` for attachments. |
 | `base64` | Images in the conversation and download links for other copied files, including PDFs, audio and ZIPs. |
 
+Unicode emoji use [Twemoji](https://github.com/jdecked/twemoji) (graphics © Twitter and contributors, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)). Each transcript includes only the icons it uses, so they also work offline. Custom server emoji keep their Discord images. The viewer uses gg sans if it is installed locally. Otherwise it uses [Figtree](https://github.com/erikdkennedy/figtree). The Latin variable font and its SIL Open Font License are included in each HTML file, so it works offline.
+
 Only message attachments from Discord's CDN are copied. Avatars, custom emoji and images linked in embeds can still need a connection. A missing or oversized attachment is marked **Not archived** beside its original link.
 
 The default limits are 8 MiB per file and 24 MiB per transcript, measured before encoding. Base64 adds about a third to that size. Check your server's upload limit if you plan to send the HTML back to Discord. The file is not encrypted; anyone with a copy can read the conversation and the archived attachments.

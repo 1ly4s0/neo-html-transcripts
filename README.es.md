@@ -61,6 +61,8 @@ Elige qué hacer con los archivos:
 | `images` | Copia las imágenes compatibles. Para los demás archivos conserva el enlace. Es el equivalente a `saveImages: true` para los adjuntos. |
 | `base64` | Copia también PDF, ZIP, audio y otros adjuntos. Las imágenes se ven en la conversación y el resto tiene un enlace de descarga con el nombre original. |
 
+Los emojis Unicode usan [Twemoji](https://github.com/jdecked/twemoji) (gráficos © Twitter y colaboradores, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)). El HTML guarda solo los iconos que aparecen en el chat, así que se ven sin conexión. Los emojis del servidor conservan sus imágenes de Discord. Si tienes gg sans instalada, el visor la usa. Si no, usa [Figtree](https://github.com/erikdkennedy/figtree). El HTML incluye la fuente latina de peso variable y su licencia SIL Open Font License, así que también funciona sin conexión.
+
 Se descargan **adjuntos de mensajes** desde la CDN de Discord, no cualquier enlace que alguien pegue en el chat. El texto y los archivos copiados funcionan sin conexión; los avatares, emojis personalizados y las imágenes enlazadas en embeds pueden necesitar internet. Si un archivo falla, su nombre aparece con **No archivado** y el enlace original. No se puede recuperar un archivo que Discord ya no sirve.
 
 Los límites se aplican a los bytes originales: 8 MiB por archivo y 24 MiB de archivos copiados por transcript, salvo que los cambies. Base64 ocupa aproximadamente un tercio más. Si vas a enviar el HTML a Discord, ten en cuenta el límite de subida de tu servidor. Un HTML con archivos dentro **no está cifrado**: quien reciba una copia podrá leerla incluso después de cerrar el ticket.

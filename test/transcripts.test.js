@@ -21,7 +21,7 @@ test('reads precisely the latest 102 messages, from oldest to newest', async () 
 
 test('transcript is static HTML; text and branding cannot insert markup', async () => {
   const html = await generateFromMessages([message(2, 'á 🍉 <script>')], channel, { ...string, title: '<ticket>' });
-  assert.match(html, /á 🍉 &lt;script&gt;/);
+  assert.match(html, /á <span[^>]+aria-label="🍉">🍉<\/span> &lt;script&gt;/);
   assert.match(html, /&lt;ticket&gt;/);
   assert.doesNotMatch(html, /<script/i);
   assert.equal(ExportReturnType.Buffer, 'buffer');

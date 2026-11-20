@@ -1,6 +1,6 @@
 {
   "name": "neo-html-transcripts",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Export a Discord channel to HTML with offline attachments.",
   "author": "1ly4s0",
   "license": "MIT",
@@ -28,5 +28,9 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@twemoji/parser": "17.0.2",
+    "twemoji-svg": "17.0.2"
   }
 }

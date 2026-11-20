@@ -18,7 +18,7 @@ async function main() {
   const file = await transcripts.createTranscript(channel, { filename: 'soporte.html' });
   const resolved = await sdk.MessagePayload.resolveFile(file);
   assert.equal(resolved.name, 'soporte.html');
-  assert.match(file.attachment.toString(), /Probando ñ y 🍉/u);
+  assert.match(file.attachment.toString(), /Probando ñ y <span[^>]+aria-label="🍉"/u);
   const buffer = await transcripts.generateFromMessages(history, channel, { returnType: 'buffer' });
   assert.ok(Buffer.isBuffer(buffer));
   assert.deepEqual(file.attachment, buffer);
