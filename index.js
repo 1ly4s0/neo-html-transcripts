@@ -1,6 +1,7 @@
 const { optionsFor } = require('./lib/options');
 const { render } = require('./lib/render');
 const { values } = require('./lib/html');
+const { labelsFor } = require('./lib/languages');
 
 const ExportReturnType = Object.freeze({ Attachment: 'attachment', Buffer: 'buffer', String: 'string' });
 
@@ -43,7 +44,17 @@ async function createTranscript(channel, options = {}) {
   return output(result.reverse(), channel, o);
 }
 
+function withLanguage(language) {
+  labelsFor(language);
+  return {
+    ExportReturnType,
+    createTranscript: (channel, options) => createTranscript(channel, { language, ...options }),
+    generateFromMessages: (messages, channel, options) => generateFromMessages(messages, channel, { language, ...options })
+  };
+}
+
+exports.withLanguage = withLanguage;
 exports.ExportReturnType = ExportReturnType;
 exports.createTranscript = createTranscript;
 exports.generateFromMessages = generateFromMessages;
-exports.default = { createTranscript, generateFromMessages };
+exports.default = { createTranscript, generateFromMessages, withLanguage, ExportReturnType };

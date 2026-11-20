@@ -1,104 +1,125 @@
 # neo-html-transcripts
 
-Guarda la conversación de un canal en un HTML que puedes abrir con el navegador. Si necesitas conservar también el PDF que envió un usuario o el ZIP con sus logs, puedes guardar los archivos dentro del HTML. No hace falta que la persona que lo abra tenga Discord.
+[![English](https://img.shields.io/badge/docs-English-5865F2)](./README.md) [![Español](https://img.shields.io/badge/docs-Español-5865F2)](./README.es.md)
 
-## Ya uso discord-html-transcripts
+Save a Discord conversation as an HTML file. You can keep the attachments inside it, so someone reviewing a ticket can open the screenshots or download the logs without signing in to Discord.
 
-Cambia la dependencia, no los comandos de tu bot. Desde la carpeta de tu proyecto:
+## Installation
 
 ```sh
-npm install discord-html-transcripts@npm:neo-html-transcripts@1.0.0
+npm install neo-html-transcripts
 ```
 
-Tu `require('discord-html-transcripts')` (o tu `import`) sigue funcionando. Si empiezas de cero, usa `npm install neo-html-transcripts` e importa ese nombre.
+If your bot already uses `discord-html-transcripts`, install this package under the old name. Your existing imports and calls to `createTranscript` or `generateFromMessages` can stay as they are:
 
-Esta es una implementación independiente. Conserva `createTranscript`, `generateFromMessages`, `ExportReturnType` y las salidas `attachment`, `buffer` y `string`. No intenta reproducir el HTML interno ni expone los componentes React o el descargador de imágenes de la versión 3.3 del [paquete original](https://github.com/ItzDerock/discord-html-transcripts). El HTML es estático: la opción antigua `hydrate` no hace falta. La compatibilidad se prueba con discord.js 13.17.1, 14.28.1 y una **preversión** de v15; v15 aún no tiene una versión estable probada.
-
-## Quiero cambiar los colores y guardar los adjuntos
-
-Crea un archivo llamado `neo-transcripts.json` en la carpeta **desde la que arrancas Node**. Se lee en cada exportación. Por ejemplo, para tickets de soporte en horario peninsular:
-
-```json
-{
-  "brand": "Soporte de NEO",
-  "accent": "#7289da",
-  "theme": "dark",
-  "locale": "es-ES",
-  "timeZone": "Europe/Madrid",
-  "attachmentMode": "base64",
-  "maxFileBytes": 8388608,
-  "maxTotalBytes": 25165824,
-  "footerText": "{number} mensaje{s} en este ticket",
-  "poweredBy": false
-}
+```sh
+npm install discord-html-transcripts@npm:neo-html-transcripts@^1.1.0
 ```
 
-Elige qué hacer con los archivos:
+The examples below use the new name. If you installed the alias, use `discord-html-transcripts` in their place.
 
-| `attachmentMode` | Qué queda en el HTML |
-| --- | --- |
-| `url` (por defecto) | Enlaces a Discord. Pesa poco, pero los enlaces firmados pueden caducar. |
-| `images` | Copia las imágenes compatibles. Para los demás archivos conserva el enlace. Es el equivalente a `saveImages: true` para los adjuntos. |
-| `base64` | Copia también PDF, ZIP, audio y otros adjuntos. Las imágenes se ven en la conversación y el resto tiene un enlace de descarga con el nombre original. |
+## Choose a language
 
-Se descargan **adjuntos de mensajes** desde la CDN de Discord, no cualquier enlace que alguien pegue en el chat. El texto y los archivos copiados funcionan sin conexión; los avatares, emojis personalizados y las imágenes enlazadas en embeds pueden necesitar internet. Si un archivo falla, su nombre aparece con **No archivado** y el enlace original. No se puede recuperar un archivo que Discord ya no sirve.
+Transcripts use English by default. To use Spanish, choose the language once when you import the package:
 
-Los límites se aplican a los bytes originales: 8 MiB por archivo y 24 MiB de archivos copiados por transcript, salvo que los cambies. Base64 ocupa aproximadamente un tercio más. Si vas a enviar el HTML a Discord, ten en cuenta el límite de subida de tu servidor. Un HTML con archivos dentro **no está cifrado**: quien reciba una copia podrá leerla incluso después de cerrar el ticket.
+```js
+const { createTranscript } = require('neo-html-transcripts').withLanguage('es');
+```
 
-## Dos ejemplos
+With ES modules:
 
-**Enviar los últimos 50 mensajes** al canal privado de moderación:
+```js
+import { withLanguage } from 'neo-html-transcripts';
+const { createTranscript, generateFromMessages } = withLanguage('es');
+```
+
+Each instance keeps its own language. An English-speaking server and a Spanish-speaking server can close tickets at the same time without affecting each other. To override the language for one export, pass `{ language: 'en' }` or `{ language: 'es' }`. This changes the viewer labels. Messages, filenames and any footer you wrote stay as they are.
+
+## Archive a ticket
+
+Send the last 50 messages to a staff channel:
 
 ```js
 const { createTranscript } = require('neo-html-transcripts');
 
-async function archivarTicket(ticket, canalDeModeracion) {
-  const archivo = await createTranscript(ticket, {
+async function archiveTicket(ticket, staffChannel) {
+  const file = await createTranscript(ticket, {
     limit: 50,
     filename: 'ticket-' + ticket.id + '.html'
   });
-  await canalDeModeracion.send({ files: [archivo] });
+  await staffChannel.send({ files: [file] });
 }
 ```
 
-El bot necesita ver el canal y leer su historial. Para que Discord entregue el contenido y los adjuntos de mensajes de usuarios, tu aplicación necesita acceso a Message Content en los casos en que Discord lo exige. Si la API no entrega esos datos, la librería no puede reconstruirlos.
+The bot needs permission to view the channel and read its message history. Where Discord requires the Message Content intent, your bot needs it to receive user messages and attachments. A transcript cannot recover content Discord did not send.
 
-**Guardar en disco los mensajes que ya tienes** sin volver a pedirlos a Discord:
+`limit: -1` reads the full history; `0` skips the fetch. To skip bot messages, pass `filter: m => !m.author.bot`. The limit counts messages that pass the filter. Messages appear oldest first.
+
+## Keep attachments offline
+
+Place `neo-transcripts.json` in the directory where you start Node. The package reads it for each export:
+
+```json
+{
+  "brand": "NEO Support",
+  "accent": "#7289da",
+  "language": "en",
+  "locale": "en-GB",
+  "timeZone": "Europe/London",
+  "attachmentMode": "base64",
+  "maxFileBytes": 8388608,
+  "maxTotalBytes": 25165824,
+  "footerText": "{number} message{s} in this ticket",
+  "poweredBy": false
+}
+```
+
+| Attachment mode | What the reader gets |
+| --- | --- |
+| `url` (default) | A small HTML file with links to Discord. Signed links can expire. |
+| `images` | Copies of supported image attachments; links for other files. Equivalent to `saveImages: true` for attachments. |
+| `base64` | Images in the conversation and download links for other copied files, including PDFs, audio and ZIPs. |
+
+Only message attachments from Discord's CDN are copied. Avatars, custom emoji and images linked in embeds can still need a connection. A missing or oversized attachment is marked **Not archived** beside its original link.
+
+The default limits are 8 MiB per file and 24 MiB per transcript, measured before encoding. Base64 adds about a third to that size. Check your server's upload limit if you plan to send the HTML back to Discord. The file is not encrypted; anyone with a copy can read the conversation and the archived attachments.
+
+## Save messages you already have
+
+`generateFromMessages` takes an array or collection in the order you want to show it. It doesn't fetch the channel history again.
 
 ```js
 const { writeFile } = require('node:fs/promises');
 const { generateFromMessages } = require('neo-html-transcripts');
 
-async function guardarSeleccion(canal, seleccion) {
-  const mensajes = [...seleccion.values()].sort((a, b) => a.createdTimestamp - b.createdTimestamp);
-  const html = await generateFromMessages(mensajes, canal, {
+async function saveSelection(channel, selection) {
+  const messages = [...selection.values()].sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+  const html = await generateFromMessages(messages, channel, {
     returnType: 'buffer',
     attachmentMode: 'base64',
-    title: 'Revisión de soporte',
+    title: 'Support review',
     showAvatars: false
   });
-  await writeFile('revision.html', html);
+  await writeFile('review.html', html);
 }
 ```
 
-`createTranscript` pagina hacia atrás y devuelve los mensajes en orden de conversación. `limit: -1` pide todo el historial; `0` no pide mensajes. Puedes pasar `filter: m => !m.author.bot`: el límite cuenta los mensajes que pasan el filtro. `generateFromMessages` respeta el orden de tu array o colección.
+## Options
 
-## Opciones
+Call options override the JSON file. For language, the order is: call, instance, JSON, then English.
 
-Las opciones de la llamada tienen prioridad sobre el JSON.
-
-| Opción | Para qué sirve |
+| Option | Use |
 | --- | --- |
-| `title`, `brand` | Título y nombre que aparece encima. Por defecto, canal y servidor. |
-| `theme`, `accent` | Tema `dark` o `light` y color de seis dígitos, por ejemplo `#5865f2`. |
-| `showAvatars`, `favicon` | Muestra u oculta avatares; usa `"guild"`, una URL HTTPS o `""` para el icono. |
-| `locale`, `timeZone` | Formato y zona horaria de las fechas. Por defecto: español y UTC. |
-| `footerText`, `poweredBy` | Texto al pie (admite `{number}` y `{s}`) y firma del paquete. |
-| `timeoutMs`, `archiveTimeoutMs` | Espera por descarga (8 s) y plazo compartido para adjuntos de un transcript (45 s). |
-| `callbacks` | En código, puedes pasar `resolveUser(id)`, `resolveChannel(id)` y `resolveRole(id)` para las menciones. Sin callback se usa la caché; si falta un nombre se conserva el ID. |
+| `title`, `brand` | Page title and the name above it. Defaults to the channel and server names. |
+| `theme`, `accent` | Choose `dark` or `light` and a six-digit hex color such as `#5865f2`. |
+| `showAvatars`, `favicon` | Toggle avatars. For the icon, use `"guild"`, an HTTPS URL or `""` for none. |
+| `locale`, `timeZone` | Dates use the selected language and UTC unless you specify a date locale or time zone. Changing `locale` alone doesn't change viewer labels. |
+| `footerText`, `poweredBy` | Set a footer with `{number}` and `{s}`, or hide the package credit. |
+| `timeoutMs`, `archiveTimeoutMs` | Download timeout per attachment (8 seconds) and shared attachment deadline per transcript (45 seconds). |
+| `callbacks` | Pass `resolveUser(id)`, `resolveChannel(id)` or `resolveRole(id)` in code to supply mention names. By default the renderer checks the cache and keeps the ID if the name is unknown. |
 
-No ejecuta scripts dentro del transcript. Los botones de Discord quedan como etiquetas y los botones con URL siguen siendo enlaces. Respuestas, embeds, reacciones, spoilers y bloques de código se pueden leer sin cargar un visor externo.
+## Compatibility and tests
 
-## Desarrollo
+This independent implementation supports the original export functions, `ExportReturnType` and the `attachment`, `buffer` and `string` outputs. It generates static HTML; it doesn't use the original package's React components, its v3.3 image downloader or the legacy `hydrate` option. Discord buttons appear as labels; URL buttons remain links.
 
-Para ejecutar las pruebas: `npm install --ignore-scripts` y `npm test`. La prueba de compatibilidad instala el tarball con el alias original en un proyecto aparte; usa mensajes y colecciones del SDK real, sin iniciar un bot ni abrir tickets.
+Run `npm install --ignore-scripts` and `npm test` to test locally. The compatibility workflow installs the packed archive under the original name and checks it against discord.js 13.17.1, 14.28.1 and a v15 development build without logging a bot in.

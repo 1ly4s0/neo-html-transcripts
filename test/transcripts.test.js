@@ -45,7 +45,7 @@ test('a failed or oversized attachment is identified without losing the conversa
   const m = { ...message(1, 'mi mensaje'), attachments: [{ name: 'notas.txt', url }] };
   const html = await generateFromMessages([m], channel, { ...string, attachmentMode: 'base64', maxFileBytes: 2 });
   assert.match(html, /mi mensaje/);
-  assert.match(html, /No archivado/);
+  assert.match(html, /Not archived/);
   assert.match(html, /notas.txt/);
 });
 
@@ -74,7 +74,7 @@ test('archives only as many bytes as the shared budget allows', async t => {
     { ...string, attachmentMode: 'base64', maxTotalBytes: 4 });
   assert.equal(fetch.mock.callCount(), 1);
   assert.match(html, /YWJj/);
-  assert.match(html, /No archivado/);
+  assert.match(html, /Not archived/);
 });
 
 test('JSON settings are read per export and a call can override them', async t => {
@@ -85,10 +85,18 @@ test('JSON settings are read per export and a call can override them', async t =
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'neo-config-'));
   t.after(async () => { process.chdir(cwd); await fs.rm(dir, { recursive: true }); });
   process.chdir(dir);
-  await fs.writeFile('neo-transcripts.json', JSON.stringify({ brand: 'Mesa de ayuda', theme: 'light', title: 'No usar' }));
+  await fs.writeFile('neo-transcripts.json', JSON.stringify({ brand: 'Mesa de ayuda', theme: 'light', title: 'No usar', language: 'es' }));
   const html = await generateFromMessages([], channel, { ...string, title: 'Incidencia' });
   assert.match(html, /Mesa de ayuda/);
   assert.match(html, /color-scheme:light/);
   assert.match(html, /<title>Incidencia<\/title>/);
   assert.doesNotMatch(html, /No usar/);
+  assert.match(html, /lang="es"/);
+  const english = require('..').withLanguage('en');
+  assert.match(await english.generateFromMessages([], channel, string), /0 messages/);
+  const custom = await english.generateFromMessages([], channel, {
+    ...string, language: 'es', footerText: 'Customer support'
+  });
+  assert.match(custom, /lang="es"/);
+  assert.match(custom, /Customer support/);
 });
